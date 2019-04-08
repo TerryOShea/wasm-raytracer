@@ -98,11 +98,11 @@ const render = s => {
     const vpRight = Vector.unitVector(
         Vector.crossProduct(eyeVector, Vector.UP)
     );
-    const upUp = Vector.unitVector(Vector.crossProduct(vpRight, eyeVector));
+    const vpUp = Vector.unitVector(Vector.crossProduct(vpRight, eyeVector));
     const fovRadians = (Math.PI * (camera.fieldOfView / 2)) / 180;
     const heightWidthRatio = height / width;
     const halfWidth = Math.tan(fovRadians);
-    const halfHeight = HeightWidthRatio * halfWidth;
+    const halfHeight = heightWidthRatio * halfWidth;
     const cameraWidth = halfWidth * 2;
     const cameraHeight = halfHeight * 2;
     const pixelWidth = cameraWidth / (width - 1);
