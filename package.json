@@ -1,0 +1,21 @@
+{
+  "name": "raytracer",
+  "version": "1.0.0",
+  "description": "A raytracer written in JS/Rust WASM",
+  "scripts": {
+    "start": "webpack --mode development",
+    "start:watch": "webpack --mode development --watch"
+  },
+  "main": "build/main.js",
+  "repository": "https://github.com/TerryOShea/wasm-raytracer.git",
+  "author": "Terry O'Shea <terrykoshea@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "babel-loader": "^8.0.5",
+    "uglifyjs-webpack-plugin": "^2.1.2",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
+  }
+}
