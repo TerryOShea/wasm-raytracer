@@ -1,253 +1,248 @@
 import * as Vector from "./vector";
 
-const canvas = document.getElementById("c");
-const width = 320;
-const height = 240;
+import("wasm-raytracer").then(wasm => {
+    // console.log(wasm.dot_product(a, b));
+    // console.log(wasm.length(a));
+    // console.log(wasm.cross_product(a, b));
+    // console.log(wasm.scale(a, 2));
+    // console.log(wasm.unit_vector(a));
+    // console.log(wasm.subtract(b, a));
 
-canvas.width = width;
-canvas.height = height;
-canvas.style.cssText = "width:" + width * 2 + "px;height:" + height * 2 + "px";
+    // UNIMPLEMENTED
+    // console.log("ADDS:");
+    
+    const canvas = document.getElementById("c");
+    const width = 320;
+    const height = 240;
 
-const ctx = canvas.getContext("2d");
-const data = ctx.getImageData(0, 0, width, height);
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.cssText = "width:" + width * 2 + "px;height:" + height * 2 + "px";
 
-const scene = {};
+    const ctx = canvas.getContext("2d");
+    const data = ctx.getImageData(0, 0, width, height);
 
-scene.camera = {
-    point: {
-        x: 0,
-        y: 1.8,
-        z: 10
-    },
-    fieldOfView: 45,
-    vector: {
-        x: 0,
-        y: 3,
-        z: 0
-    }
-};
+    const scene = {};
 
-scene.lights = [
-    {
-        x: -30,
-        y: -10,
-        z: 20
-    }
-];
-
-scene.objects = [
-    {
-        type: "sphere",
+    scene.camera = {
         point: {
             x: 0,
-            y: 3.5,
-            z: -3
+            y: 1.8,
+            z: 10
         },
-        color: {
-            x: 155,
-            y: 200,
-            z: 155
-        },
-        specular: 0.2,
-        lambert: 0.7,
-        ambient: 0.1,
-        radius: 3
-    },
-    {
-        type: "sphere",
-        point: {
-            x: -4,
-            y: 2,
-            z: -1
-        },
-        color: {
-            x: 155,
-            y: 155,
-            z: 155
-        },
-        specular: 0.1,
-        lambert: 0.9,
-        ambient: 0.0,
-        radius: 0.2
-    },
-    {
-        type: "sphere",
-        point: {
-            x: -4,
+        fieldOfView: 45,
+        vector: {
+            x: 0,
             y: 3,
-            z: -1
-        },
-        color: {
-            x: 255,
-            y: 255,
-            z: 255
-        },
-        specular: 0.2,
-        lambert: 0.7,
-        ambient: 0.1,
-        radius: 0.1
-    }
-];
-
-const render = s => {
-    const { camera, objects, lights } = s;
-
-    const eyeVector = Vector.unitVector(
-        Vector.subtract(camera.vector, camera.point)
-    );
-    const vpRight = Vector.unitVector(
-        Vector.crossProduct(eyeVector, Vector.UP)
-    );
-    const vpUp = Vector.unitVector(Vector.crossProduct(vpRight, eyeVector));
-    const fovRadians = (Math.PI * (camera.fieldOfView / 2)) / 180;
-    const heightWidthRatio = height / width;
-    const halfWidth = Math.tan(fovRadians);
-    const halfHeight = heightWidthRatio * halfWidth;
-    const cameraWidth = halfWidth * 2;
-    const cameraHeight = halfHeight * 2;
-    const pixelWidth = cameraWidth / (width - 1);
-    const pixelHeight = cameraHeight / (height - 1);
-
-    let index, color;
-    const ray = {
-        point: camera.point
+            z: 0
+        }
     };
 
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            const xcomp = Vector.scale(vpRight, x * pixelWidth - halfWidth);
-            const ycomp = Vector.scale(vpUp, y * pixelHeight - halfHeight);
+    scene.lights = [
+        {
+            x: -30,
+            y: -10,
+            z: 20
+        },
+    ];
 
-            ray.vector = Vector.unitVector(Vector.add(eyeVector, xcomp, ycomp));
-
-            color = trace(ray, s, 0);
-            index = x * 4 + y * width * 4;
-            data.data[index + 0] = color.x;
-            data.data[index + 1] = color.y;
-            data.data[index + 2] = color.z;
-            data.data[index + 3] = 255;
+    scene.objects = [
+        {
+            type: "sphere",
+            point: {
+                x: 0,
+                y: 3.5,
+                z: -3
+            },
+            color: {
+                x: 255,
+                y: 230,
+                z: 0
+            },
+            lambert: 0.7,
+            ambient: 0.5,
+            radius: 3
+        },
+        {
+            type: "sphere",
+            point: {
+                x: -4,
+                y: 2,
+                z: -1
+            },
+            color: {
+                x: 155,
+                y: 155,
+                z: 155
+            },
+            lambert: 0.9,
+            ambient: 0.0,
+            radius: 0.2
+        },
+        {
+            type: "sphere",
+            point: {
+                x: -4,
+                y: 3,
+                z: -1
+            },
+            color: {
+                x: 255,
+                y: 255,
+                z: 255
+            },
+            lambert: 0.7,
+            ambient: 0.1,
+            radius: 0.1
         }
-    }
+    ];
 
-    ctx.putImageData(data, 0, 0);
-};
+    const render = s => {
+        const { camera, objects, lights } = s;
 
-const trace = (ray, s, depth) => {
-    if (depth > 3) {
-        return;
-    }
+        const eyeVector = Vector.unitVector(
+            Vector.subtract(camera.vector, camera.point)
+        );
+        const vpRight = Vector.unitVector(
+            Vector.crossProduct(eyeVector, Vector.UP)
+        );
+        const vpUp = Vector.unitVector(Vector.crossProduct(vpRight, eyeVector));
+        const fovRadians = (Math.PI * (camera.fieldOfView / 2)) / 180;
+        const heightWidthRatio = height / width;
+        const halfWidth = Math.tan(fovRadians);
+        const halfHeight = heightWidthRatio * halfWidth;
+        const cameraWidth = halfWidth * 2;
+        const cameraHeight = halfHeight * 2;
+        const pixelWidth = cameraWidth / (width - 1);
+        const pixelHeight = cameraHeight / (height - 1);
 
-    const [dist, obj] = intersectScene(ray, s);
-    if (!obj) {
-        return Vector.WHITE;
-    }
+        let index, color;
+        const ray = {
+            point: camera.point
+        };
 
-    const pointAtTime = Vector.add(ray.point, Vector.scale(ray.vector, dist));
-    return surface(
-        ray,
-        s,
-        obj,
-        pointAtTime,
-        sphereNormal(obj, pointAtTime),
-        depth
-    );
-};
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                const xcomp = Vector.scale(vpRight, x * pixelWidth - halfWidth);
+                const ycomp = Vector.scale(vpUp, y * pixelHeight - halfHeight);
 
-const intersectScene = (ray, s) => {
-    let closest = [Infinity, null];
+                ray.vector = Vector.unitVector(Vector.add(eyeVector, xcomp, ycomp));
 
-    s.objects.forEach(obj => {
-        const dist = sphereIntersection(obj, ray);
-        if (dist !== undefined && dist < closest[0]) {
-            closest = [dist, obj];
+                color = trace(ray, s, 0);
+                index = x * 4 + y * width * 4;
+                data.data[index + 0] = color.x;
+                data.data[index + 1] = color.y;
+                data.data[index + 2] = color.z;
+                data.data[index + 3] = 255;
+            }
         }
-    });
 
-    return closest;
-};
+        ctx.putImageData(data, 0, 0);
+    };
 
-const sphereIntersection = (sphere, ray) => {
-    const eyeToCenter = Vector.subtract(sphere.point, ray.point);
-    const v = Vector.dotProduct(eyeToCenter, ray.vector);
-    const eoDot = Vector.dotProduct(eyeToCenter, eyeToCenter);
-    const discriminant = sphere.radius * sphere.radius - eoDot + v * v;
+    const trace = (ray, s, depth) => {
+        if (depth > 3) {
+            return;
+        }
 
-    // sphere hasn't been hit by ray
-    if (discriminant < 0) {
-        return;
-    } else {
-        return v - Math.sqrt(discriminant);
-    }
-};
+        const [dist, obj] = intersectScene(ray, s);
+        if (!obj) {
+            return Vector.WHITE;
+        }
 
-const sphereNormal = (sphere, pos) =>
-    Vector.unitVector(Vector.subtract(pos, sphere.point));
+        const pointAtTime = Vector.add(ray.point, Vector.scale(ray.vector, dist));
+        return surface(
+            ray,
+            s,
+            obj,
+            pointAtTime,
+            sphereNormal(obj, pointAtTime),
+            depth
+        );
+    };
 
-const surface = (ray, s, object, pointAtTime, normal, depth) => {
-    let lambertAmount = 0;
-    let c = Vector.ZERO;
-    let b = object.color;
+    const intersectScene = (ray, s) => {
+        let closest = [Infinity, null];
 
-    if (object.lambert) {
-        s.lights.forEach(lightPoint => {
-            if (isLightVisible(pointAtTime, s, lightPoint)) {
-                const contribution = Vector.dotProduct(
-                    Vector.unitVector(Vector.subtract(lightPoint, pointAtTime)),
-                    normal
-                );
-                if (contribution > 0) {
-                    lambertAmount += contribution;
-                }
+        s.objects.forEach(obj => {
+            const dist = sphereIntersection(obj, ray);
+            if (dist !== undefined && dist < closest[0]) {
+                closest = [dist, obj];
             }
         });
-    }
 
-    if (object.specular) {
-        const reflectedRay = {
-            point: pointAtTime,
-            vector: Vector.reflectThrough(ray.vector, normal)
-        };
-        const reflectedColor = trace(reflectedRay, s, depth + 1);
-        if (reflectedColor) {
-            c = Vector.add(c, Vector.scale(reflectedColor, object.specular)); // need to add c here?
+        return closest;
+    };
+
+    const sphereIntersection = (sphere, ray) => {
+        const eyeToCenter = Vector.subtract(sphere.point, ray.point);
+        const v = Vector.dotProduct(eyeToCenter, ray.vector);
+        const eoDot = Vector.dotProduct(eyeToCenter, eyeToCenter);
+        const discriminant = sphere.radius * sphere.radius - eoDot + v * v;
+
+        // sphere hasn't been hit by ray
+        if (discriminant < 0) {
+            return;
+        } else {
+            return v - Math.sqrt(discriminant);
         }
-    }
+    };
 
-    lambertAmount = Math.min(1, lambertAmount);
+    const sphereNormal = (sphere, pos) =>
+        Vector.unitVector(Vector.subtract(pos, sphere.point));
 
-    return Vector.add(
-        c,
-        Vector.scale(b, lambertAmount * object.lambert),
-        Vector.scale(b, object.ambient)
-    );
-};
+    const surface = (ray, s, object, pointAtTime, normal, depth) => {
+        let lambertAmount = 0;
 
-const isLightVisible = (pt, s, light) => {
-    const distObject = intersectScene(
-        {
-            point: pt,
-            vector: Vector.unitVector(Vector.subtract(pt, light))
-        },
-        s
-    );
-    return distObject[0] > -0.005;
-};
+        if (object.lambert) {
+            s.lights.forEach(lightPoint => {
+                if (isLightVisible(pointAtTime, s, lightPoint)) {
+                    const contribution = Vector.dotProduct(
+                        Vector.unitVector(Vector.subtract(lightPoint, pointAtTime)),
+                        normal
+                    );
+                    if (contribution > 0) {
+                        lambertAmount += contribution;
+                    }
+                }
+            });
+        }
 
-let moon1 = 0;
-let moon2 = 0;
+        lambertAmount = Math.min(1, lambertAmount);
 
-const tick = () => {
-    moon1 += 0.1;
-    moon2 += 0.2;
+        return Vector.add(
+            Vector.scale(object.color, lambertAmount * object.lambert),
+            Vector.scale(object.color, object.ambient)
+        );
+    };
 
-    scene.objects[1].point.x = Math.sin(moon1) * 3.5;
-    scene.objects[1].point.z = -3 + Math.cos(moon1) * 3.5;
+    const isLightVisible = (pt, s, light) => {
+        const distObject = intersectScene(
+            {
+                point: pt,
+                vector: Vector.unitVector(Vector.subtract(pt, light))
+            },
+            s
+        );
+        return distObject[0] > -0.005;
+    };
 
-    scene.objects[2].point.x = Math.sin(moon2) * 4;
-    scene.objects[2].point.z = -3 + Math.cos(moon2) * 4;
+    let moon1 = 0;
+    let moon2 = 0;
 
-    render(scene);
-    setTimeout(tick, 10);
-};
+    const tick = () => {
+        moon1 += 0.1;
+        moon2 += 0.2;
 
-tick();
+        scene.objects[1].point.x = Math.sin(moon1) * 3.5;
+        scene.objects[1].point.z = -3 + Math.cos(moon1) * 3.5;
+
+        scene.objects[2].point.x = Math.sin(moon2) * 4;
+        scene.objects[2].point.z = -3 + Math.cos(moon2) * 4;
+
+        render(scene);
+        setTimeout(tick, 10);
+    };
+
+    tick();
+});

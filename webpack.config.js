@@ -13,7 +13,12 @@ module.exports = {
     },
     output: {
         filename: "main.js",
-        path: path.resolve(__dirname, 'build') 
+        path: path.resolve(__dirname, 'dist') 
+    },
+    resolve: {
+        alias: {
+            "wasm-raytracer": path.resolve(__dirname, "pkg/wasm_raytracer.js")
+        }
     },
     module: {
         rules: [

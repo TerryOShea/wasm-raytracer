@@ -37,8 +37,3 @@ export const subtract = (a, b) => ({
     y: a.y - b.y,
     z: a.z - b.z
 });
-
-export const reflectThrough = (a, normal) => {
-    const d = scale(normal, dotProduct(a, normal));
-    return subtract(scale(d, 2), a);
-};
