@@ -241,13 +241,14 @@ pub fn is_light_visible(
     closest_distance > -0.005
 }
 
+// `sphereIntersection` in JS
 pub fn distance_to_sphere(vector: &XYZ, point: &XYZ, sphere: &Sphere) -> f64 {
     let eye_to_center = subtract(&sphere.point, point);
     let v = dot_product(&eye_to_center, &vector);
     let eo_dot = dot_product(&eye_to_center, &eye_to_center);
     let discriminant = &sphere.radius * &sphere.radius - eo_dot + v * v;
 
-    // sphere hasn't been hit by ray
+    // sphere isn't hit by ray
     match discriminant {
         d if d < 0.0 => f64::INFINITY,
         _ => v - discriminant.sqrt(),
@@ -307,3 +308,6 @@ fn subtract(a: &XYZ, b: &XYZ) -> XYZ {
         z: a.z - b.z,
     }
 }
+
+#[cfg(test)]
+mod tests;
