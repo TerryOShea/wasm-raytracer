@@ -1,26 +1,35 @@
 import * as Vector from "./vector";
 
+const WIDTH = 320;
+const HEIGHT = 240;
+
+const canvas = document.getElementById("c");
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+canvas.style.cssText = "width:" + WIDTH * 2 + "px;height:" + HEIGHT * 2 + "px";
+
+const ctx = canvas.getContext("2d");
+const data = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+
 import("wasm-raytracer").then(wasm => {
-    // console.log(wasm.dot_product(a, b));
-    // console.log(wasm.length(a));
-    // console.log(wasm.cross_product(a, b));
-    // console.log(wasm.scale(a, 2));
-    // console.log(wasm.unit_vector(a));
-    // console.log(wasm.subtract(b, a));
+    const planet1Pos = { x: -4, y: 2, z: -1 };
+    const planet2Pos = { x: -4, y: 3, z: -1 };
+    let planet1Inc = 0;
+    let planet2Inc = 0;
 
-    // UNIMPLEMENTED
-    // console.log("ADDS:");
-    
-    const canvas = document.getElementById("c");
-    const width = 320;
-    const height = 240;
+    const future_tick = () => {
+        planet1Inc += 0.1;
+        planet2Inc += 0.2;
 
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.cssText = "width:" + width * 2 + "px;height:" + height * 2 + "px";
+        planet1Pos.x = Math.sin(planet1Inc) * 3.5;
+        planet1Pos.z = -3 + Math.cos(planet1Inc) * 3.5;
+        planet2Pos.x = Math.sin(planet2Inc) * 4;
+        planet2Pos.z = -3 + Math.cos(planet2Inc) * 4;
+        console.log(wasm.generate_new_data(planet1Pos, planet2Pos));
+    }
+    future_tick();
 
-    const ctx = canvas.getContext("2d");
-    const data = ctx.getImageData(0, 0, width, height);
+
 
     const scene = {};
 
@@ -48,7 +57,6 @@ import("wasm-raytracer").then(wasm => {
 
     scene.objects = [
         {
-            type: "sphere",
             point: {
                 x: 0,
                 y: 3.5,
@@ -64,7 +72,6 @@ import("wasm-raytracer").then(wasm => {
             radius: 3
         },
         {
-            type: "sphere",
             point: {
                 x: -4,
                 y: 2,
@@ -80,7 +87,6 @@ import("wasm-raytracer").then(wasm => {
             radius: 0.2
         },
         {
-            type: "sphere",
             point: {
                 x: -4,
                 y: 3,
@@ -98,7 +104,7 @@ import("wasm-raytracer").then(wasm => {
     ];
 
     const render = s => {
-        const { camera, objects, lights } = s;
+        const { camera } = s;
 
         const eyeVector = Vector.unitVector(
             Vector.subtract(camera.vector, camera.point)
@@ -108,28 +114,28 @@ import("wasm-raytracer").then(wasm => {
         );
         const vpUp = Vector.unitVector(Vector.crossProduct(vpRight, eyeVector));
         const fovRadians = (Math.PI * (camera.fieldOfView / 2)) / 180;
-        const heightWidthRatio = height / width;
+        const heightWidthRatio = HEIGHT / WIDTH;
         const halfWidth = Math.tan(fovRadians);
         const halfHeight = heightWidthRatio * halfWidth;
         const cameraWidth = halfWidth * 2;
         const cameraHeight = halfHeight * 2;
-        const pixelWidth = cameraWidth / (width - 1);
-        const pixelHeight = cameraHeight / (height - 1);
+        const pixelWidth = cameraWidth / (WIDTH - 1);
+        const pixelHeight = cameraHeight / (HEIGHT - 1);
 
         let index, color;
         const ray = {
             point: camera.point
         };
 
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
+        for (let x = 0; x < WIDTH; x++) {
+            for (let y = 0; y < HEIGHT; y++) {
                 const xcomp = Vector.scale(vpRight, x * pixelWidth - halfWidth);
                 const ycomp = Vector.scale(vpUp, y * pixelHeight - halfHeight);
 
                 ray.vector = Vector.unitVector(Vector.add(eyeVector, xcomp, ycomp));
 
-                color = trace(ray, s, 0);
-                index = x * 4 + y * width * 4;
+                color = trace(ray, s);
+                index = (x + y * WIDTH) * 4;
                 data.data[index + 0] = color.x;
                 data.data[index + 1] = color.y;
                 data.data[index + 2] = color.z;
@@ -140,11 +146,7 @@ import("wasm-raytracer").then(wasm => {
         ctx.putImageData(data, 0, 0);
     };
 
-    const trace = (ray, s, depth) => {
-        if (depth > 3) {
-            return;
-        }
-
+    const trace = (ray, s) => {
         const [dist, obj] = intersectScene(ray, s);
         if (!obj) {
             return Vector.WHITE;
@@ -157,7 +159,6 @@ import("wasm-raytracer").then(wasm => {
             obj,
             pointAtTime,
             sphereNormal(obj, pointAtTime),
-            depth
         );
     };
 
@@ -166,7 +167,7 @@ import("wasm-raytracer").then(wasm => {
 
         s.objects.forEach(obj => {
             const dist = sphereIntersection(obj, ray);
-            if (dist !== undefined && dist < closest[0]) {
+            if (dist < closest[0]) {
                 closest = [dist, obj];
             }
         });
@@ -182,7 +183,7 @@ import("wasm-raytracer").then(wasm => {
 
         // sphere hasn't been hit by ray
         if (discriminant < 0) {
-            return;
+            return Infinity;
         } else {
             return v - Math.sqrt(discriminant);
         }
@@ -191,7 +192,7 @@ import("wasm-raytracer").then(wasm => {
     const sphereNormal = (sphere, pos) =>
         Vector.unitVector(Vector.subtract(pos, sphere.point));
 
-    const surface = (ray, s, object, pointAtTime, normal, depth) => {
+    const surface = (ray, s, object, pointAtTime, normal) => {
         let lambertAmount = 0;
 
         if (object.lambert) {
@@ -227,18 +228,18 @@ import("wasm-raytracer").then(wasm => {
         return distObject[0] > -0.005;
     };
 
-    let moon1 = 0;
-    let moon2 = 0;
+    let planet1 = 0;
+    let planet2 = 0;
 
     const tick = () => {
-        moon1 += 0.1;
-        moon2 += 0.2;
+        planet1 += 0.1;
+        planet2 += 0.2;
 
-        scene.objects[1].point.x = Math.sin(moon1) * 3.5;
-        scene.objects[1].point.z = -3 + Math.cos(moon1) * 3.5;
+        scene.objects[1].point.x = Math.sin(planet1) * 3.5;
+        scene.objects[1].point.z = -3 + Math.cos(planet1) * 3.5;
 
-        scene.objects[2].point.x = Math.sin(moon2) * 4;
-        scene.objects[2].point.z = -3 + Math.cos(moon2) * 4;
+        scene.objects[2].point.x = Math.sin(planet2) * 4;
+        scene.objects[2].point.z = -3 + Math.cos(planet2) * 4;
 
         render(scene);
         setTimeout(tick, 10);
