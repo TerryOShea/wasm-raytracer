@@ -1,3 +1,51 @@
+body {
+    font-family: 'PT Sans', sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-container {
+    margin-left: 100px;
+    margin-top: 4px;
+}
+
+.canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+.wasm, .js {
+  position: relative;
+  top: -3px;
+}
+
+.slider {
+  display: inline-block;
+  background-color: #b7410e;
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  margin: 0 5px;
+}
+
+.slider:hover {
+    cursor: pointer;
+}
+
+.slider-toggle {
+  background-color: white;
+  width: 18px;
+  height: 18px;
+  position: relative;
+  top: 1px;
+  left: 1px;
+  border-radius: 50%;
+}
+
 footer {
     position: fixed;
     bottom: 0;

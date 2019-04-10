@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700&subset=all|PT+Sans:400,400i,700,700i&subset=all|PT+Serif:400,400i,700,700i&subset=all" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/brands.css" integrity="sha384-n9+6/aSqa9lBidZMRCQHTHKJscPq6NW4pCQBiMmHdUCvPN8ZOg2zJJTkC7WIezWv" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
     <link type="text/css" rel="stylesheet" href="styles.css">
@@ -9,13 +10,19 @@
   </head>
 
   <body>
-    <header>
+    <header class="header">
       <h1>Raytracer</h1>
+
+      <div class="slider-container">
+        <span class="wasm">WASM</span>
+        <div class="slider" id="slider">
+          <div class="slider-toggle" id="slider-toggle"></div>
+        </div>
+        <span class="js">JS</span>
+      </div>
     </header>
 
-    <canvas id="c"></canvas>
-    <button id="js">JS</button>
-    <button id="wasm">WASM</button>
+    <canvas class="canvas" id="c"></canvas>
 
     <footer>
       <a href="https://github.com/TerryOShea/wasm-raytracer"><i class="fab fa-github"></i></a>

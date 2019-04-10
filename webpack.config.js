@@ -3,17 +3,16 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     context: path.resolve(__dirname),
+    entry: "./src/main.js",
+    output: {
+        filename: "main.js",
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: "/"
+    },
     optimization: {
         minimizer: [
             new TerserPlugin()
         ]
-    },
-    entry: {
-        main: "./src/main.js"
-    },
-    output: {
-        filename: "main.js",
-        path: path.resolve(__dirname, 'dist') 
     },
     resolve: {
         alias: {

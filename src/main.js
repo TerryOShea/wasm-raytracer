@@ -45,18 +45,13 @@ import("wasm-raytracer").then(wasm => {
     tick();
 });
 
-const jsBtn = document.getElementById("js");
-const wasmBtn = document.getElementById("wasm");
-wasmBtn.style.backgroundColor = "blue";
+const slider = document.getElementById("slider");
+const sliderToggle = document.getElementById("slider-toggle");
+const gray = "#bababa";
+const rust = "#b7410e";
 
-jsBtn.addEventListener("click", () => {
-    useWasm = false;
-    wasmBtn.style.backgroundColor = "inherit";
-    jsBtn.style.backgroundColor = "blue";
-});
-
-wasmBtn.addEventListener("click", () => {
-    useWasm = true;
-    jsBtn.style.backgroundColor = "inherit";
-    wasmBtn.style.backgroundColor = "blue";
+slider.addEventListener("click", () => {
+    useWasm = !useWasm;
+    slider.style.backgroundColor = useWasm ? rust : gray;
+    sliderToggle.style.left = useWasm ? "1px" : "21px";
 });
