@@ -28,9 +28,9 @@ const LIGHTS: [XYZ; 1] = [XYZ {
 
 #[derive(Debug)]
 pub struct Color {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
+    pub r: u16,
+    pub g: u16,
+    pub b: u16,
 }
 
 const WHITE: Color = Color {
@@ -96,12 +96,12 @@ const UP_VECTOR: XYZ = XYZ {
 };
 
 const MOON_1_COLOR: Color = Color {
-    r: 155,
-    g: 155,
-    b: 155,
+    r: 153,
+    g: 102,
+    b: 255,
 };
 const MOON_1_LAMBERT: f64 = 0.9;
-const MOON_1_AMBIENT: f64 = 0.0;
+const MOON_1_AMBIENT: f64 = 0.5;
 const MOON_1_RADIUS: f64 = 0.2;
 
 const MOON_2_COLOR: Color = Color {
@@ -110,17 +110,11 @@ const MOON_2_COLOR: Color = Color {
     b: 255,
 };
 const MOON_2_LAMBERT: f64 = 0.7;
-const MOON_2_AMBIENT: f64 = 0.1;
+const MOON_2_AMBIENT: f64 = 0.5;
 const MOON_2_RADIUS: f64 = 0.1;
 
 #[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -> Vec<u8> {
+pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -> Vec<u16> {
     let planet_1_pos: XYZ = planet_1_pos_js.into_serde().unwrap();
     let planet_2_pos: XYZ = planet_2_pos_js.into_serde().unwrap();
 
@@ -149,7 +143,7 @@ pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -
     let pixel_width = camera_width / (WIDTH as f64 - 1.0);
     let pixel_height = camera_height / (HEIGHT as f64 - 1.0);
 
-    let mut new_data: Vec<u8> = vec![];
+    let mut new_data: Vec<u16> = vec![];
     for row in 0..HEIGHT {
         for col in 0..WIDTH {
             let rowcomp = scale(&vp_up, row as f64 * pixel_height - half_height);
@@ -157,7 +151,7 @@ pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -
             let vector = unit_vector(&add(vec![&eye_vector, &rowcomp, &colcomp]));
 
             let color = color_for_pixel(&vector, &planet_1, &planet_2);
-            new_data.extend(&[color.r, color.b, color.g, 255]);
+            new_data.extend(&[color.r, color.g, color.b, 255]);
         }
     }
 
@@ -184,10 +178,6 @@ pub fn color_for_pixel(vector: &XYZ, planet_1: &Sphere, planet_2: &Sphere) -> Co
             let point_at_time = add(vec![&CAMERA_POINT, &scale(vector, closest_distance)]);
             let sphere_normal = unit_vector(&subtract(&point_at_time, &s.point));
             color_of_sphere(s, &sphere_normal, &point_at_time, planet_1, planet_2)
-            // println!("{:?}", point_at_time);
-            // println!("{:?}", sphere_normal);
-            // println!("{:?}", color);
-            // Color { r: 1, g: 2, b: 3 }
         }
         None => WHITE,
     }
@@ -205,7 +195,9 @@ pub fn color_of_sphere(
     for light in LIGHTS.iter() {
         if is_light_visible(point_at_time, &light, planet_1, planet_2) {
             let contribution = dot_product(&unit_vector(&subtract(&light, point_at_time)), normal);
-            lambert += contribution.max(0.0);
+            if contribution > 0.0 {
+                lambert += contribution;
+            }
         }
     }
 
@@ -224,9 +216,9 @@ pub fn color_of_sphere(
     ]);
 
     Color {
-        r: computed_color_as_xyz.x as u8,
-        g: computed_color_as_xyz.y as u8,
-        b: computed_color_as_xyz.z as u8,
+        r: computed_color_as_xyz.x as u16,
+        g: computed_color_as_xyz.y as u16,
+        b: computed_color_as_xyz.z as u16,
     }
 }
 

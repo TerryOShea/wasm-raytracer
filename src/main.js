@@ -103,8 +103,6 @@ import("wasm-raytracer").then(wasm => {
         }
     ];
 
-    let printct = 0;
-
     const render = s => {
         const { camera } = s;
 
