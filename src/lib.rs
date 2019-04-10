@@ -45,6 +45,7 @@ pub struct Camera {
     pub vector: XYZ,
 }
 
+#[derive(Debug)]
 pub struct Sphere {
     pub point: XYZ,
     pub color: Color,
@@ -113,6 +114,12 @@ const MOON_2_AMBIENT: f64 = 0.1;
 const MOON_2_RADIUS: f64 = 0.1;
 
 #[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+#[wasm_bindgen]
 pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -> Vec<u8> {
     let planet_1_pos: XYZ = planet_1_pos_js.into_serde().unwrap();
     let planet_2_pos: XYZ = planet_2_pos_js.into_serde().unwrap();
@@ -143,16 +150,18 @@ pub fn generate_new_data(planet_1_pos_js: &JsValue, planet_2_pos_js: &JsValue) -
     let pixel_height = camera_height / (HEIGHT as f64 - 1.0);
 
     let mut new_data: Vec<u8> = vec![];
-    for x in 0..WIDTH {
-        for y in 0..HEIGHT {
-            let xcomp = scale(&vp_right, x as f64 * pixel_width - half_width);
-            let ycomp = scale(&vp_up, y as f64 * pixel_height - half_height);
-            let vector = unit_vector(&add(vec![&eye_vector, &xcomp, &ycomp]));
+    for row in 0..HEIGHT {
+        for col in 0..WIDTH {
+            let rowcomp = scale(&vp_up, row as f64 * pixel_height - half_height);
+            let colcomp = scale(&vp_right, col as f64 * pixel_width - half_width);
+            let vector = unit_vector(&add(vec![&eye_vector, &rowcomp, &colcomp]));
 
             let color = color_for_pixel(&vector, &planet_1, &planet_2);
             new_data.extend(&[color.r, color.b, color.g, 255]);
         }
     }
+
+    // log(&format!("{:?}", &new_data[100000..100101]));
 
     new_data
 }
@@ -174,11 +183,11 @@ pub fn color_for_pixel(vector: &XYZ, planet_1: &Sphere, planet_2: &Sphere) -> Co
         Some(s) => {
             let point_at_time = add(vec![&CAMERA_POINT, &scale(vector, closest_distance)]);
             let sphere_normal = unit_vector(&subtract(&point_at_time, &s.point));
-            let color = color_of_sphere(s, &sphere_normal, &point_at_time, planet_1, planet_2);
-            println!("{:?}", point_at_time);
-            println!("{:?}", sphere_normal);
-            println!("{:?}", color);
-            Color { r: 1, g: 2, b: 3 }
+            color_of_sphere(s, &sphere_normal, &point_at_time, planet_1, planet_2)
+            // println!("{:?}", point_at_time);
+            // println!("{:?}", sphere_normal);
+            // println!("{:?}", color);
+            // Color { r: 1, g: 2, b: 3 }
         }
         None => WHITE,
     }

@@ -25,11 +25,11 @@ import("wasm-raytracer").then(wasm => {
         planet1Pos.z = -3 + Math.cos(planet1Inc) * 3.5;
         planet2Pos.x = Math.sin(planet2Inc) * 4;
         planet2Pos.z = -3 + Math.cos(planet2Inc) * 4;
-        console.log(wasm.generate_new_data(planet1Pos, planet2Pos));
+
+        data.data.set(wasm.generate_new_data(planet1Pos, planet2Pos));
+        ctx.putImageData(data, 0, 0);
+        setTimeout(future_tick, 10);
     }
-    future_tick();
-
-
 
     const scene = {};
 
@@ -103,6 +103,8 @@ import("wasm-raytracer").then(wasm => {
         }
     ];
 
+    let printct = 0;
+
     const render = s => {
         const { camera } = s;
 
@@ -127,22 +129,24 @@ import("wasm-raytracer").then(wasm => {
             point: camera.point
         };
 
-        for (let x = 0; x < WIDTH; x++) {
-            for (let y = 0; y < HEIGHT; y++) {
-                const xcomp = Vector.scale(vpRight, x * pixelWidth - halfWidth);
-                const ycomp = Vector.scale(vpUp, y * pixelHeight - halfHeight);
+        let idx = 0;
 
-                ray.vector = Vector.unitVector(Vector.add(eyeVector, xcomp, ycomp));
+        for (let row = 0; row < HEIGHT; row++) {
+            for (let col = 0; col < WIDTH; col++) {
+                const rowcomp = Vector.scale(vpUp, row * pixelHeight - halfHeight);
+                const colcomp = Vector.scale(vpRight, col * pixelWidth - halfWidth);
+
+                ray.vector = Vector.unitVector(Vector.add(eyeVector, rowcomp, colcomp));
 
                 color = trace(ray, s);
-                index = (x + y * WIDTH) * 4;
-                data.data[index + 0] = color.x;
-                data.data[index + 1] = color.y;
-                data.data[index + 2] = color.z;
-                data.data[index + 3] = 255;
+                data.data[idx + 0] = color.x;
+                data.data[idx + 1] = color.y;
+                data.data[idx + 2] = color.z;
+                data.data[idx + 3] = 255;
+                idx += 4;
             }
         }
-
+        
         ctx.putImageData(data, 0, 0);
     };
 
@@ -232,18 +236,19 @@ import("wasm-raytracer").then(wasm => {
     let planet2 = 0;
 
     const tick = () => {
-        planet1 += 0.1;
-        planet2 += 0.2;
-
-        scene.objects[1].point.x = Math.sin(planet1) * 3.5;
-        scene.objects[1].point.z = -3 + Math.cos(planet1) * 3.5;
-
-        scene.objects[2].point.x = Math.sin(planet2) * 4;
-        scene.objects[2].point.z = -3 + Math.cos(planet2) * 4;
-
         render(scene);
-        setTimeout(tick, 10);
+
+        // planet1 += 0.1;
+        // planet2 += 0.2;
+
+        // scene.objects[1].point.x = Math.sin(planet1) * 3.5;
+        // scene.objects[1].point.z = -3 + Math.cos(planet1) * 3.5;
+
+        // scene.objects[2].point.x = Math.sin(planet2) * 4;
+        // scene.objects[2].point.z = -3 + Math.cos(planet2) * 4;
+
+        // setTimeout(tick, 10);
     };
 
-    tick();
+    future_tick();
 });
