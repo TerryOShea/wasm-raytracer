@@ -14,7 +14,7 @@ const renderData = pixelData => {
     ctx.putImageData(data, 0, 0);
 };
 
-let useWasm = false;
+let useWasm = true;
 
 import("wasm-raytracer").then(wasm => {
     const planet1Pos = { x: -4, y: 2, z: -1 };
@@ -39,8 +39,24 @@ import("wasm-raytracer").then(wasm => {
             renderData(generateNewPixelData(SCENE));
         }
 
-        setTimeout(tick, 1000);
+        setTimeout(tick, 10);
     };
 
     tick();
+});
+
+const jsBtn = document.getElementById("js");
+const wasmBtn = document.getElementById("wasm");
+wasmBtn.style.backgroundColor = "blue";
+
+jsBtn.addEventListener("click", () => {
+    useWasm = false;
+    wasmBtn.style.backgroundColor = "inherit";
+    jsBtn.style.backgroundColor = "blue";
+});
+
+wasmBtn.addEventListener("click", () => {
+    useWasm = true;
+    jsBtn.style.backgroundColor = "inherit";
+    wasmBtn.style.backgroundColor = "blue";
 });

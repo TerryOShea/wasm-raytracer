@@ -4,7 +4,6 @@ import * as Vector from "./vector";
 const generateNewPixelData = scene => {
     const { camera } = scene;
 
-    console.log("#1");
     const eyeVector = Vector.unitVector(
         Vector.subtract(camera.vector, camera.point)
     );
@@ -77,9 +76,6 @@ const intersectScene = (ray, s) => {
 };
 
 const sphereIntersection = (sphere, ray) => {
-    console.log("#2");
-    console.log(sphere);
-    console.log(ray);
     const eyeToCenter = Vector.subtract(sphere.point, ray.point);
     const v = Vector.dotProduct(eyeToCenter, ray.vector);
     const eoDot = Vector.dotProduct(eyeToCenter, eyeToCenter);
@@ -93,13 +89,8 @@ const sphereIntersection = (sphere, ray) => {
     }
 };
 
-// const sphereNormal = (sphere, pos) =>
-//     Vector.unitVector(Vector.subtract(pos, sphere.point));
-
-const sphereNormal = (sphere, pos) => {
-    console.log("#3");
-    return Vector.unitVector(Vector.subtract(pos, sphere.point));
-};
+const sphereNormal = (sphere, pos) =>
+    Vector.unitVector(Vector.subtract(pos, sphere.point));
 
 const surface = (ray, s, object, pointAtTime, normal) => {
     let lambertAmount = 0;
@@ -107,7 +98,6 @@ const surface = (ray, s, object, pointAtTime, normal) => {
     if (object.lambert) {
         s.lights.forEach(lightPoint => {
             if (isLightVisible(pointAtTime, s, lightPoint)) {
-                console.log("#4");
                 const contribution = Vector.dotProduct(
                     Vector.unitVector(Vector.subtract(lightPoint, pointAtTime)),
                     normal
@@ -128,7 +118,6 @@ const surface = (ray, s, object, pointAtTime, normal) => {
 };
 
 const isLightVisible = (pt, s, light) => {
-    console.log("#5");
     const distObject = intersectScene(
         {
             point: pt,

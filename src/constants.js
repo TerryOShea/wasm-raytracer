@@ -45,12 +45,12 @@ export const SCENE = {
                 z: -1
             },
             color: {
-                x: 155,
-                y: 155,
-                z: 155
+                x: 153,
+                y: 102,
+                z: 255
             },
             lambert: 0.9,
-            ambient: 0.0,
+            ambient: 0.5,
             radius: 0.2
         },
         {
@@ -65,7 +65,7 @@ export const SCENE = {
                 z: 255
             },
             lambert: 0.7,
-            ambient: 0.1,
+            ambient: 0.5,
             radius: 0.1
         }
     ],
