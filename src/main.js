@@ -1,5 +1,5 @@
-import { SCENE, WIDTH, HEIGHT } from './constants';
-import generateNewPixelData from './pixel-data';
+import { SCENE, WIDTH, HEIGHT } from './js/constants';
+import generateNewPixelData from './js/pixel-data';
 
 const canvas = document.getElementById("c");
 canvas.width = WIDTH;
